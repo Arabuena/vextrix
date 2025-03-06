@@ -4,7 +4,7 @@ const getBaseURL = () => {
   // Em produção, sempre usar o proxy
   if (window.location.hostname.includes('vercel.app')) {
     console.log('Ambiente de produção detectado, usando proxy');
-    return '/api';  // Simplificado para usar apenas /api
+    return '/api';
   }
   
   // Em desenvolvimento local
