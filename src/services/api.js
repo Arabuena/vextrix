@@ -1,10 +1,19 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
+  // Para debug
+  console.log('Variáveis de ambiente:', {
+    VITE_API_URL: import.meta.env.VITE_API_URL,
+    MODE: import.meta.env.MODE
+  });
+  
   const envUrl = import.meta.env?.VITE_API_URL;
   if (!envUrl) {
     console.warn('VITE_API_URL não encontrada no ambiente. Usando URL padrão.');
-    return 'http://localhost:5000/api';
+    // Apontando direto para o Render em produção
+    return import.meta.env.PROD 
+      ? 'https://bora-backend-5agl.onrender.com'
+      : 'http://localhost:5000/api';
   }
   return envUrl;
 };
