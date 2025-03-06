@@ -5,21 +5,18 @@ const prodURL = 'https://bora-backend-5agl.onrender.com';
 const devURL = 'http://localhost:5000';
 
 const api = axios.create({
-  // Não use /api no baseURL
   baseURL: isProd ? prodURL : devURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Access-Control-Allow-Origin': '*'
+    'Accept': 'application/json'
   }
 });
 
 // Log de configuração
 console.log('API Configuration:', {
   environment: process.env.NODE_ENV,
-  baseURL: api.defaults.baseURL,
-  withCredentials: api.defaults.withCredentials
+  baseURL: api.defaults.baseURL
 });
 
 // Interceptor para requisições
@@ -31,12 +28,13 @@ api.interceptors.request.use(
     if (config.url?.startsWith('/api/')) {
       config.url = config.url.substring(4);
     }
-    
+
     // Log da requisição
     console.log('Making request:', {
       method: config.method,
       url: config.url,
-      fullUrl: `${config.baseURL}${config.url}`
+      fullUrl: `${config.baseURL}${config.url}`,
+      data: config.data
     });
 
     if (token) {
@@ -62,12 +60,23 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    console.error('Response Error:', {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url
-    });
+    if (error.response) {
+      // O servidor respondeu com um status de erro
+      console.error('Response Error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config.url
+      });
+    } else if (error.request) {
+      // A requisição foi feita mas não houve resposta
+      console.error('No Response:', {
+        request: error.request,
+        url: error.config.url
+      });
+    } else {
+      // Algo aconteceu na configuração da requisição
+      console.error('Request Setup Error:', error.message);
+    }
     
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
