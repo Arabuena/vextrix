@@ -1,11 +1,14 @@
 {
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "https://bora-backend-5agl.onrender.com/api/$1"
+    }
+  ],
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://bora-backend-5agl.onrender.com/:path*"
-    },
-    {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
