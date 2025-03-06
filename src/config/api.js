@@ -4,35 +4,45 @@ const isProd = process.env.NODE_ENV === 'production';
 const prodURL = 'https://bora-backend-5agl.onrender.com';
 const devURL = 'http://localhost:5000';
 
-console.log('Environment:', process.env.NODE_ENV);
-console.log('Using URL:', isProd ? prodURL : devURL);
-
 const api = axios.create({
+  // Não use /api no baseURL
   baseURL: isProd ? prodURL : devURL,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'Access-Control-Allow-Origin': '*'
   }
 });
 
-// Interceptor para adicionar o token
+// Log de configuração
+console.log('API Configuration:', {
+  environment: process.env.NODE_ENV,
+  baseURL: api.defaults.baseURL,
+  withCredentials: api.defaults.withCredentials
+});
+
+// Interceptor para requisições
 api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
     
-    // Log para debug
-    console.log('Request Config:', {
-      method: config.method,
-      url: `${config.baseURL}${config.url}`,
-      headers: config.headers,
-      hasToken: !!token
-    });
+    // Remove /api do início da URL se existir
+    if (config.url?.startsWith('/api/')) {
+      config.url = config.url.substring(4);
+    }
     
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
+
+    // Log da requisição
+    console.log('Request:', {
+      method: config.method,
+      fullUrl: `${config.baseURL}${config.url}`,
+      headers: config.headers
+    });
+
     return config;
   },
   error => {
@@ -41,10 +51,10 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para tratar erros
+// Interceptor para respostas
 api.interceptors.response.use(
   response => {
-    console.log('Response:', {
+    console.log('Response Success:', {
       status: response.status,
       url: response.config.url,
       data: response.data
@@ -54,13 +64,9 @@ api.interceptors.response.use(
   error => {
     console.error('Response Error:', {
       message: error.message,
-      response: error.response?.data,
       status: error.response?.status,
-      config: {
-        url: error.config?.url,
-        method: error.config?.method,
-        headers: error.config?.headers
-      }
+      data: error.response?.data,
+      url: error.config?.url
     });
     
     if (error.response?.status === 401) {
