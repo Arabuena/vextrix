@@ -32,16 +32,16 @@ api.interceptors.request.use(
       config.url = config.url.substring(4);
     }
     
+    // Log da requisição
+    console.log('Making request:', {
+      method: config.method,
+      url: config.url,
+      fullUrl: `${config.baseURL}${config.url}`
+    });
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
-    // Log da requisição
-    console.log('Request:', {
-      method: config.method,
-      fullUrl: `${config.baseURL}${config.url}`,
-      headers: config.headers
-    });
 
     return config;
   },
