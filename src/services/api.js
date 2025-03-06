@@ -1,20 +1,27 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  // Para debug
-  console.log('Variáveis de ambiente:', {
-    VITE_API_URL: import.meta.env.VITE_API_URL,
-    MODE: import.meta.env.MODE,
-    PROD: import.meta.env.PROD
-  });
-  
-  // Em produção, sempre usar o Render
-  if (import.meta.env.PROD) {
+  try {
+    // Em produção, sempre usar o Render
+    if (import.meta.env?.PROD) {
+      console.log('Ambiente de produção detectado, usando URL do Render');
+      return 'https://bora-backend-5agl.onrender.com';
+    }
+    
+    // Tentar pegar a URL da variável de ambiente
+    const envUrl = import.meta.env?.VITE_API_URL;
+    if (envUrl) {
+      console.log('Usando URL da variável de ambiente:', envUrl);
+      return envUrl;
+    }
+    
+    // Fallback para localhost
+    console.log('Usando URL local');
+    return 'http://localhost:5000';
+  } catch (error) {
+    console.warn('Erro ao obter URL da API, usando URL do Render:', error);
     return 'https://bora-backend-5agl.onrender.com';
   }
-  
-  // Em desenvolvimento, usar variável de ambiente ou localhost
-  return import.meta.env.VITE_API_URL || 'http://localhost:5000';
 };
 
 const api = axios.create({
