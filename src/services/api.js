@@ -1,7 +1,16 @@
 import axios from 'axios';
 
+const getBaseURL = () => {
+  const envUrl = import.meta.env?.VITE_API_URL;
+  if (!envUrl) {
+    console.warn('VITE_API_URL não encontrada no ambiente. Usando URL padrão.');
+    return 'http://localhost:5000/api';
+  }
+  return envUrl;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+  baseURL: getBaseURL()
 });
 
 // Interceptor para logs
