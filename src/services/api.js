@@ -1,29 +1,15 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  // Forçar uso do Render em todos os ambientes
-  return 'https://bora-backend-5agl.onrender.com';
-  
-  /* Comentando a lógica anterior para debug
-  try {
-    if (import.meta.env?.PROD) {
-      console.log('Ambiente de produção detectado, usando URL do Render');
-      return 'https://bora-backend-5agl.onrender.com';
-    }
-    
-    const envUrl = import.meta.env?.VITE_API_URL;
-    if (envUrl) {
-      console.log('Usando URL da variável de ambiente:', envUrl);
-      return envUrl;
-    }
-    
-    console.log('Usando URL local');
-    return 'http://localhost:5000';
-  } catch (error) {
-    console.warn('Erro ao obter URL da API, usando URL do Render:', error);
-    return 'https://bora-backend-5agl.onrender.com';
+  // Em produção, sempre usar o proxy
+  if (window.location.hostname.includes('vercel.app')) {
+    console.log('Ambiente de produção detectado, usando proxy');
+    return window.location.origin + '/api';
   }
-  */
+  
+  // Em desenvolvimento local
+  console.log('Ambiente de desenvolvimento detectado');
+  return 'http://localhost:5000';
 };
 
 const api = axios.create({
@@ -37,6 +23,7 @@ const api = axios.create({
 api.interceptors.request.use(
   config => {
     console.log('API Request:', config.url);
+    console.log('API Base URL:', config.baseURL);
     const token = localStorage.getItem('token');
     console.log('Token sendo enviado:', token);
     
