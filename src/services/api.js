@@ -4,22 +4,24 @@ const getBaseURL = () => {
   // Para debug
   console.log('Variáveis de ambiente:', {
     VITE_API_URL: import.meta.env.VITE_API_URL,
-    MODE: import.meta.env.MODE
+    MODE: import.meta.env.MODE,
+    PROD: import.meta.env.PROD
   });
   
-  const envUrl = import.meta.env?.VITE_API_URL;
-  if (!envUrl) {
-    console.warn('VITE_API_URL não encontrada no ambiente. Usando URL padrão.');
-    // Apontando direto para o Render em produção
-    return import.meta.env.PROD 
-      ? 'https://bora-backend-5agl.onrender.com'
-      : 'http://localhost:5000/api';
+  // Em produção, sempre usar o Render
+  if (import.meta.env.PROD) {
+    return 'https://bora-backend-5agl.onrender.com';
   }
-  return envUrl;
+  
+  // Em desenvolvimento, usar variável de ambiente ou localhost
+  return import.meta.env.VITE_API_URL || 'http://localhost:5000';
 };
 
 const api = axios.create({
-  baseURL: getBaseURL()
+  baseURL: getBaseURL(),
+  headers: {
+    'Content-Type': 'application/json'
+  }
 });
 
 // Interceptor para logs
