@@ -4,7 +4,8 @@ const getBaseURL = () => {
   // Em produção, sempre usar o proxy
   if (window.location.hostname.includes('vercel.app')) {
     console.log('Ambiente de produção detectado, usando proxy');
-    return '/api';
+    // Remover o /api da URL base pois será adicionado nas rotas
+    return '';
   }
   
   // Em desenvolvimento local
@@ -19,9 +20,14 @@ const api = axios.create({
   }
 });
 
-// Interceptor para logs
+// Interceptor para logs e ajuste de URL
 api.interceptors.request.use(
   config => {
+    // Adiciona /api nas requisições em produção
+    if (window.location.hostname.includes('vercel.app')) {
+      config.url = '/api' + config.url;
+    }
+    
     console.log('API Request:', config.url);
     console.log('API Base URL:', config.baseURL);
     console.log('Full URL:', config.baseURL + config.url);
