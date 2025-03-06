@@ -1,26 +1,51 @@
-import api from './api';
+const express = require('express');
+const cors = require('cors');
+const router = express.Router();
 
-export const login = async (email, password) => {
+// Rota de login
+router.post('/login', async (req, res, next) => {
   try {
-    const response = await api.post('/auth/login', { email, password });
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('user', JSON.stringify(response.data.user));
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Erro ao fazer login');
-  }
-};
+    console.log('Login attempt:', {
+      body: req.body,
+      headers: req.headers
+    });
 
-export const register = async (userData) => {
-  try {
-    const response = await api.post('/auth/register', userData);
-    return response.data;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || 'Erro ao registrar');
-  }
-};
+    // TODO: Implementar lógica de login
+    res.json({
+      success: true,
+      token: 'token_temporario',
+      user: {
+        id: 1,
+        email: req.body.email
+      }
+    });
 
-export const logout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-}; 
+  } catch (error) {
+    console.error('Login error:', error);
+    next(error);
+  }
+});
+
+// Rota de teste
+router.get('/test', (req, res) => {
+  res.json({
+    message: 'Auth route is working',
+    timestamp: new Date()
+  });
+});
+
+// Rota de teste CORS
+router.options('/test-cors', cors());
+router.get('/test-cors', (req, res) => {
+  res.json({
+    message: 'CORS test successful',
+    origin: req.headers.origin,
+    environment: {
+      node_env: process.env.NODE_ENV,
+      frontend_url: process.env.FRONTEND_URL
+    },
+    headers: req.headers
+  });
+});
+
+module.exports = router; 
