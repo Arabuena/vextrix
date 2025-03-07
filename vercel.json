@@ -23,5 +23,31 @@
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept" }
       ]
     }
-  ]
+  ]{
+    "version": 2,
+    "framework": "create-react-app",
+    "buildCommand": "npm run build",
+    "installCommand": "npm install",
+    "outputDirectory": "build",
+    "env": {
+      "REACT_APP_API_URL": "https://bora-backend-5agl.onrender.com",
+      "REACT_APP_GOOGLE_MAPS_API_KEY": "AIzaSyAVe7W-B0zZa-6ePrcLfZkDzs1RGRSHSCc"
+    },
+    "rewrites": [
+      {
+        "source": "/api/:path*",
+        "destination": "https://bora-backend-5agl.onrender.com/:path*"
+      }
+    ],
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          { "key": "Access-Control-Allow-Origin", "value": "https://bora-backend-5agl.onrender.com" },
+          { "key": "Access-Control-Allow-Methods", "value": "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS" },
+          { "key": "Access-Control-Allow-Headers", "value": "Content-Type, Authorization, X-Requested-With, Accept" }
+        ]
+      }
+    ]
+  } 
 } 
