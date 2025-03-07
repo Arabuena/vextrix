@@ -1,42 +1,37 @@
 import axios from 'axios';
 
-const getBaseURL = () => {
-  if (process.env.NODE_ENV === 'production') {
-    console.log('Ambiente de produção detectado');
-    return 'https://bora-backend-5agl.onrender.com';
-  }
-  
-  console.log('Ambiente de desenvolvimento detectado');
-  return 'http://localhost:5000';
-};
-
 const api = axios.create({
-  baseURL: getBaseURL(),
+  // Em produção, use o proxy do Vercel
+  baseURL: process.env.NODE_ENV === 'production' ? '/api' : 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
   }
 });
 
-// Interceptor para logs e ajuste de URL
+// Log de configuração
+console.log('API Configuration:', {
+  environment: process.env.NODE_ENV,
+  baseURL: api.defaults.baseURL
+});
+
+// Interceptor para requisições
 api.interceptors.request.use(
   config => {
-    // Remove /api do início da URL se existir
-    if (config.url?.startsWith('/api/')) {
-      config.url = config.url.substring(4);
-    }
+    const token = localStorage.getItem('token');
     
-    console.log('Request:', {
+    console.log('Making request:', {
       method: config.method,
       url: config.url,
+      baseURL: config.baseURL,
       fullUrl: `${config.baseURL}${config.url}`,
-      data: config.data
+      headers: config.headers
     });
-    
-    const token = localStorage.getItem('token');
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   error => {
@@ -45,9 +40,10 @@ api.interceptors.request.use(
   }
 );
 
+// Interceptor para respostas
 api.interceptors.response.use(
   response => {
-    console.log('Response:', {
+    console.log('Response Success:', {
       status: response.status,
       url: response.config.url,
       data: response.data
@@ -55,16 +51,15 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    console.error('Response Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url
-    });
-    
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    if (error.response) {
+      console.error('Response Error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config.url,
+        headers: error.config.headers
+      });
+    } else {
+      console.error('Network Error:', error.message);
     }
     return Promise.reject(error);
   }
