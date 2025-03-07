@@ -1,14 +1,11 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  // Em produção, sempre usar o proxy
-  if (window.location.hostname.includes('vercel.app')) {
-    console.log('Ambiente de produção detectado, usando proxy');
-    // Remover o /api da URL base pois será adicionado nas rotas
-    return '';
+  if (process.env.NODE_ENV === 'production') {
+    console.log('Ambiente de produção detectado');
+    return 'https://bora-backend-5agl.onrender.com';
   }
   
-  // Em desenvolvimento local
   console.log('Ambiente de desenvolvimento detectado');
   return 'http://localhost:5000';
 };
@@ -16,42 +13,54 @@ const getBaseURL = () => {
 const api = axios.create({
   baseURL: getBaseURL(),
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
   }
 });
 
 // Interceptor para logs e ajuste de URL
 api.interceptors.request.use(
   config => {
-    // Adiciona /api nas requisições em produção
-    if (window.location.hostname.includes('vercel.app')) {
-      config.url = '/api' + config.url;
+    // Remove /api do início da URL se existir
+    if (config.url?.startsWith('/api/')) {
+      config.url = config.url.substring(4);
     }
     
-    console.log('API Request:', config.url);
-    console.log('API Base URL:', config.baseURL);
-    console.log('Full URL:', config.baseURL + config.url);
-    const token = localStorage.getItem('token');
-    console.log('Token sendo enviado:', token);
+    console.log('Request:', {
+      method: config.method,
+      url: config.url,
+      fullUrl: `${config.baseURL}${config.url}`,
+      data: config.data
+    });
     
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   error => {
-    console.error('API Request Error:', error);
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 api.interceptors.response.use(
   response => {
-    console.log('API Response:', response.status);
+    console.log('Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data
+    });
     return response;
   },
   error => {
-    console.error('API Response Error:', error);
+    console.error('Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url
+    });
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
