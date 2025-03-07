@@ -29,12 +29,11 @@ api.interceptors.request.use(
       config.url = config.url.substring(4);
     }
 
-    // Log da requisição
     console.log('Making request:', {
       method: config.method,
       url: config.url,
       fullUrl: `${config.baseURL}${config.url}`,
-      data: config.data
+      headers: config.headers
     });
 
     if (token) {
@@ -60,30 +59,10 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    if (error.response) {
-      // O servidor respondeu com um status de erro
-      console.error('Response Error:', {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config.url
-      });
-    } else if (error.request) {
-      // A requisição foi feita mas não houve resposta
-      console.error('No Response:', {
-        request: error.request,
-        url: error.config.url
-      });
-    } else {
-      // Algo aconteceu na configuração da requisição
-      console.error('Request Setup Error:', error.message);
-    }
-    
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-    }
-    
-    return Promise.reject(error);
-  }
-);
-
-export default api; 
+    console.error('Response Error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+      message: error.message
+    });
+    return Promise.r

@@ -4,10 +4,12 @@ const login = async (email, password) => {
   try {
     console.log('Tentando login:', { email });
     
-    const response = await api.post('/auth/login', { 
-      email, 
-      password 
+    const response = await api.post('auth/login', {
+      email,
+      password
     });
+
+    console.log('Login response:', response.data);
 
     if (response.data.success) {
       const { token, user } = response.data;
