@@ -1,12 +1,9 @@
 import axios from 'axios';
 
-const isProd = process.env.NODE_ENV === 'production';
-const prodURL = 'https://bora-backend-5agl.onrender.com';
-const devURL = 'http://localhost:5000';
-
 const api = axios.create({
-  baseURL: isProd ? prodURL : devURL,
-  withCredentials: true,
+  baseURL: process.env.NODE_ENV === 'production' 
+    ? 'https://bora-backend-5agl.onrender.com'
+    : 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -24,16 +21,12 @@ api.interceptors.request.use(
   config => {
     const token = localStorage.getItem('token');
     
-    // Remove /api do início da URL se existir
-    if (config.url?.startsWith('/api/')) {
-      config.url = config.url.substring(4);
-    }
-
     console.log('Making request:', {
       method: config.method,
       url: config.url,
       fullUrl: `${config.baseURL}${config.url}`,
-      headers: config.headers
+      headers: config.headers,
+      data: config.data
     });
 
     if (token) {
@@ -59,10 +52,13 @@ api.interceptors.response.use(
     return response;
   },
   error => {
-    console.error('Response Error:', {
-      status: error.response?.status,
-      data: error.response?.data,
-      url: error.config?.url,
-      message: error.message
-    });
+    if (error.response) {
+      console.error('Response Error:', {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config.url
+      });
+    } else {
+      console.error('Network Error:', error.message);
+    }
     return Promise.r
